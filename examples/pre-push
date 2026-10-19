@@ -1,0 +1,24 @@
+#!/bin/sh
+# git pre-push hook: judge every commit this push would publish, before it leaves the machine.
+#
+#   cp examples/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+#
+# git hands the hook one line per ref: <local ref> <local sha> <remote ref> <remote sha>.
+# For an existing branch the new commits are remote..local; for a new branch they are the
+# commits no remote-tracking ref has yet. Findings (exit 1) and NOT EVALUABLE (exit 2) both
+# stop the push. Your denylist is read as usual ($PUBLISH_GATE_DENYLIST or
+# ~/.config/publish-gate/denylist). To push anyway, after reading the findings:
+# `git push --no-verify`.
+status=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+    case $local_sha in *[!0]*) ;; *) continue ;; esac      # deleting a ref publishes nothing
+    case $remote_sha in
+        *[!0]*) range="$remote_sha..$local_sha" ;;
+        *) range="$local_sha --not --remotes" ;;            # a new branch
+    esac
+    echo "publish-gate: $local_ref -> $remote_ref" >&2
+    publish-gate . --history --range "$range" >&2
+    rc=$?
+    [ "$rc" -gt "$status" ] && status=$rc
+done
+exit "$status"
