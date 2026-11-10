@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 (2026-11-09)
 
+- Python 3.11 or newer is required (3.9 and 3.10 are end-of-life). CI tests 3.11 to 3.14 on `ubuntu-latest`.
 - A `SYNTHETIC-DATA` marker that is a symlink is no longer followed: a dangling link no longer crashes the run, a link to a device is not read without limit, and a link to a file outside the tree cannot mark a folder synthetic. Only the first 512 bytes of a marker are read.
 - `--history` and the tree scan run git with replace refs off, so a `git replace` can no longer make a leaking commit read as clean.
 - An inline `allow=review-term` marker no longer clears a block-list name written glued (`ExampleIndustries`, `acmecorp.com`). Such a name is still a review finding, but only `--accept-review` clears it.

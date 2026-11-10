@@ -24,7 +24,7 @@ Designed for:
 - **Git, for the history check.** `--history` and the pre-push hook need it. A plain folder can be
   scanned without it.
 
-Try it (Python 3.9+). List your private names, one per line, in `~/.config/publish-gate/denylist`, then:
+Try it (Python 3.11+). List your private names, one per line, in `~/.config/publish-gate/denylist`, then:
 
     pip install git+https://github.com/lockesec/publish-gate
     publish-gate .
