@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- A private name of several words is found when a line wrap splits it (`Example` at the end of one
+  line, `Industries` at the start of the next). It is reported once, on the first line. Any joining on
+  one line (space, tab, hyphen, underscore, dot) was already found.
+
 ## 0.1.1 (2026-11-09)
 
 - Python 3.11 or newer is required (3.9 and 3.10 are end-of-life). CI tests 3.11 to 3.14 on `ubuntu-latest`.

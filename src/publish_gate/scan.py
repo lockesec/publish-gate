@@ -138,11 +138,34 @@ def shown_path(rel: str) -> str:
 def _scan_text(where_prefix: str, text: str, terms: Terms, suffix: str, res: Result,
                path: "str | None" = None, commit: "str | None" = None) -> None:
     excused: list = []
-    for i, line in enumerate(text.splitlines(), 1):
+    lines = text.splitlines()
+    for i, line in enumerate(lines, 1):
         # one value matched by two patterns (a token that is also an assigned value) is one leak
-        for cls, shown in dict.fromkeys(scan_line(line, terms, suffix, excused)):
+        hits = scan_line(line, terms, suffix, excused)
+        if i < len(lines) and line.strip():
+            hits += _wrapped_names(line, lines[i], terms)
+        for cls, shown in dict.fromkeys(hits):
             res.findings.append(Finding(cls, f"{where_prefix}:{i}", shown, path, i, commit))
     res.excused += len(excused)
+
+
+WRAP_WINDOW = 120   # characters each side of a line break searched for a wrapped name
+
+
+def _wrapped_names(line: str, nxt: str, terms: Terms) -> list:
+    """Names of several words that a line wrap splits ("Example" at the end of one line,
+    "Industries" at the start of the next). Only matches that cross the seam count, so a name
+    wholly inside either line is not reported twice; it is reported on the first line."""
+    tail = line[-WRAP_WINDOW:]
+    seam = tail + "\n" + nxt[:WRAP_WINDOW]
+    out = []
+    for rx, cls in ((terms._block, "denylist"), (terms._review, "review-term")):
+        if rx is None:
+            continue
+        for m in rx.finditer(seam):
+            if m.start() < len(tail) < m.end():
+                out.append((cls, " ".join(m.group(0).split())))
+    return out
 
 
 def _judge_blob(rel: str, data: bytes, terms: Terms, synthetic_dirs: set, res: Result,
